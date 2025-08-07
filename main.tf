@@ -34,7 +34,7 @@ resource "aws_codepipeline" "this" {
         PollForSourceChanges = each.value.provider == "CodeCommit" ? "false" : null
 
         # CodeStarSourceConnection 전용 속성
-        ConnectionArn    = each.value.provider == "CodeStarSourceConnection" ? each.value.provider : null
+        # ConnectionArn    = each.value.provider == "CodeStarSourceConnection" ? each.value.provider : null
         ConnectionArn    = each.value.provider == "CodeStarSourceConnection" ? each.value.connection_arn : null
         FullRepositoryId = each.value.provider == "CodeStarSourceConnection" ? each.value.FullRepositoryId : null
       }
@@ -82,9 +82,37 @@ resource "aws_codepipeline" "this" {
       configuration = {
         ClusterName       = var.ecs_cluster_name
         ServiceName       = each.value.ecs_service_name
+        FileName          = var.ecs_deployment_file
         DeploymentTimeout = "10"
       }
       region          = var.region
     }
   }
+}
+
+resource "aws_codestarnotifications_notification_rule" "codepipeline_notification" {
+  for_each = var.pipelines
+
+  name        = "${each.key}-notification"
+  detail_type = "FULL"
+  resource    = aws_codepipeline.this[each.key].arn
+
+  event_type_ids = [
+    "codepipeline-pipeline-pipeline-execution-failed",
+    "codepipeline-pipeline-pipeline-execution-canceled",
+    "codepipeline-pipeline-pipeline-execution-started",
+    "codepipeline-pipeline-pipeline-execution-resumed",
+    "codepipeline-pipeline-pipeline-execution-succeeded",
+    "codepipeline-pipeline-pipeline-execution-superseded",
+  ]
+
+  target {
+    address = var.chatbot_slack_target_arn
+    type    = "AWSChatbotSlack"
+  }
+
+  tags = merge(var.common_tags, {
+    Environment = var.environment
+    Name        = "${each.key}-notification"
+  })
 }
