@@ -73,21 +73,21 @@ resource "aws_codepipeline" "this" {
       name = "Deploy"
 
       action {
-        name      = "Deploy"
-        category  = "Deploy"
-        owner     = "AWS"
-        provider  = "ECS"
-        version   = "1"
-        namespace = "DeployVariables"
+        name            = "Deploy"
+        category        = "Deploy"
+        owner           = "AWS"
+        provider        = "ECS"
+        version         = "1"
+        namespace       = "DeployVariables"
         input_artifacts = ["BuildArtifact"]
-        run_order = 1
+        run_order       = 1
         configuration = {
           ClusterName       = var.ecs_cluster_name
           ServiceName       = each.value.ecs_service_name
           FileName          = var.ecs_deployment_file
           DeploymentTimeout = "10"
         }
-        region          = var.region
+        region = var.region
       }
     }
   }

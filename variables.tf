@@ -1,15 +1,15 @@
 variable "pipelines" {
   type = map(object({
-    provider              = string
-    ecs_service_name      = string
+    provider               = string
+    ecs_service_name       = string
     deploy_input_artifacts = optional(string)
-    repository_name       = optional(string) # CodeStarSourceConnection의 경우 필요 없음
-    connection_arn        = optional(string) # CodeStarSourceConnection만 필요
-    FullRepositoryId      = optional(string) # CodeStarSourceConnection만 필요
-    branch_name           = string
-    environment_variables = map(string)
-    build_project_name = string
-    enable_deploy      = optional(bool, false)
+    repository_name        = optional(string) # CodeStarSourceConnection의 경우 필요 없음
+    connection_arn         = optional(string) # CodeStarSourceConnection만 필요
+    FullRepositoryId       = optional(string) # CodeStarSourceConnection만 필요
+    branch_name            = string
+    environment_variables  = map(string)
+    build_project_name     = string
+    enable_deploy          = optional(bool, false)
   }))
 }
 
