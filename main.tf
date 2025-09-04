@@ -55,7 +55,7 @@ resource "aws_codepipeline" "this" {
       namespace        = "BuildVariables"
 
       configuration = {
-        ProjectName = var.build_project_name
+        ProjectName = each.value.build_project_name
         EnvironmentVariables = jsonencode([
           for k, v in each.value.environment_variables : {
             name  = k
@@ -67,25 +67,28 @@ resource "aws_codepipeline" "this" {
     }
   }
 
-  stage {
-    name = "Deploy"
+  dynamic "stage" {
+    for_each = each.value.enable_deploy ? [1] : []
+    content {
+      name = "Deploy"
 
-    action {
-      name      = "Deploy"
-      category  = "Deploy"
-      owner     = "AWS"
-      provider  = "ECS"
-      version   = "1"
-      namespace = "DeployVariables"
-      input_artifacts = ["BuildArtifact"]
-      run_order = 1
-      configuration = {
-        ClusterName       = var.ecs_cluster_name
-        ServiceName       = each.value.ecs_service_name
-        FileName          = var.ecs_deployment_file
-        DeploymentTimeout = "10"
+      action {
+        name      = "Deploy"
+        category  = "Deploy"
+        owner     = "AWS"
+        provider  = "ECS"
+        version   = "1"
+        namespace = "DeployVariables"
+        input_artifacts = ["BuildArtifact"]
+        run_order = 1
+        configuration = {
+          ClusterName       = var.ecs_cluster_name
+          ServiceName       = each.value.ecs_service_name
+          FileName          = var.ecs_deployment_file
+          DeploymentTimeout = "10"
+        }
+        region          = var.region
       }
-      region          = var.region
     }
   }
 }

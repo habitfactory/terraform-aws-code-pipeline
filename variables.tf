@@ -8,6 +8,8 @@ variable "pipelines" {
     FullRepositoryId      = optional(string) # CodeStarSourceConnection만 필요
     branch_name           = string
     environment_variables = map(string)
+    build_project_name = string
+    enable_deploy      = optional(bool, false)
   }))
 }
 
@@ -42,10 +44,10 @@ variable "region" {
   type        = string
 }
 
-variable "build_project_name" {
+/*variable "build_project_name" {
   description = "build project name"
   type        = string
-}
+}*/
 
 variable "chatbot_slack_target_arn" {
   description = "AWS Chatbot Slack Target ARN"
