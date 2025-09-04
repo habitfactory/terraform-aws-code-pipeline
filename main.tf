@@ -55,7 +55,7 @@ resource "aws_codepipeline" "this" {
       namespace        = "BuildVariables"
 
       configuration = {
-        ProjectName = each.value.build_project_name
+        ProjectName = var.build_project_name
         EnvironmentVariables = jsonencode([
           for k, v in each.value.environment_variables : {
             name  = k
