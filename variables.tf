@@ -9,7 +9,7 @@ variable "pipelines" {
     branch_name            = string
     environment_variables  = map(string)
     build_project_name     = string
-    enable_deploy          = optional(bool, false)
+    deploy_type            = optional(string)
   }))
 }
 

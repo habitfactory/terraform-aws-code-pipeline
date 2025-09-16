@@ -68,26 +68,53 @@ resource "aws_codepipeline" "this" {
   }
 
   dynamic "stage" {
-    for_each = each.value.enable_deploy ? [1] : []
+    for_each = lookup(each.value, "deploy_type", null) != null ? [1] : []
     content {
       name = "Deploy"
 
-      action {
-        name            = "Deploy"
-        category        = "Deploy"
-        owner           = "AWS"
-        provider        = "ECS"
-        version         = "1"
-        namespace       = "DeployVariables"
-        input_artifacts = ["BuildArtifact"]
-        run_order       = 1
-        configuration = {
-          ClusterName       = var.ecs_cluster_name
-          ServiceName       = each.value.ecs_service_name
-          FileName          = var.ecs_deployment_file
-          DeploymentTimeout = "10"
+      # ECS 배포
+      dynamic "action" {
+        for_each = each.value.deploy_type == "ECS" ? [1] : []
+        content {
+          name            = "Deploy"
+          category        = "Deploy"
+          owner           = "AWS"
+          provider        = "ECS"
+          version         = "1"
+          namespace       = "DeployVariables"
+          input_artifacts = ["BuildArtifact"]
+          run_order       = 1
+          configuration = {
+            ClusterName       = var.ecs_cluster_name
+            ServiceName       = each.value.ecs_service_name
+            FileName          = var.ecs_deployment_file
+            DeploymentTimeout = "10"
+          }
+          region = var.region
         }
-        region = var.region
+      }
+
+      # CodeBuild 배포
+      dynamic "action" {
+        for_each = each.value.deploy_type == "CodeBuild" ? [1] : []
+        content {
+          name            = "Deploy"
+          category        = "Deploy"
+          owner           = "AWS"
+          provider        = "CodeBuild"
+          version         = "1"
+          input_artifacts = ["SourceArtifact"]
+          configuration = {
+            ProjectName = each.value.build_project_name
+            EnvironmentVariables = jsonencode([
+              for k, v in each.value.environment_variables : {
+                name  = k
+                type  = "PLAINTEXT"
+                value = v
+              }
+            ])
+          }
+        }
       }
     }
   }
