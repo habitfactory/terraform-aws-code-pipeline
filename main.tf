@@ -94,12 +94,12 @@ resource "aws_codepipeline" "this" {
         }
       }
 
-      # CodeBuild 배포
+      # CodeBuild 배포, CodeBuild를 사용할때 category는 Build가 맞음
       dynamic "action" {
         for_each = each.value.deploy_type == "CodeBuild" ? [1] : []
         content {
           name            = "Deploy"
-          category        = "Deploy"
+          category        = "Build"
           owner           = "AWS"
           provider        = "CodeBuild"
           version         = "1"
