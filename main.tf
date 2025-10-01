@@ -57,7 +57,7 @@ resource "aws_codepipeline" "this" {
       configuration = {
         ProjectName = each.value.build_project_name
         EnvironmentVariables = jsonencode([
-          for k, v in each.value.environment_variables : {
+          for k, v in each.value.build_environment_variables : {
             name  = k
             type  = "PLAINTEXT"
             value = v
@@ -107,7 +107,7 @@ resource "aws_codepipeline" "this" {
           configuration = {
             ProjectName = each.value.build_project_name
             EnvironmentVariables = jsonencode([
-              for k, v in each.value.environment_variables : {
+              for k, v in each.value.deploy_environment_variables : {
                 name  = k
                 type  = "PLAINTEXT"
                 value = v

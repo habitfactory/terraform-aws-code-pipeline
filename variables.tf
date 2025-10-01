@@ -7,7 +7,8 @@ variable "pipelines" {
     connection_arn         = optional(string) # CodeStarSourceConnection만 필요
     FullRepositoryId       = optional(string) # CodeStarSourceConnection만 필요
     branch_name            = string
-    environment_variables  = map(string)
+    build_environment_variables  = map(string)
+    deploy_environment_variables  = map(string)
     build_project_name     = string
     deploy_type            = optional(string)
   }))
