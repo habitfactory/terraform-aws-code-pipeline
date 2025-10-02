@@ -3,6 +3,7 @@ resource "aws_codepipeline" "this" {
 
   name     = each.key
   role_arn = var.pipeline_role_arn
+  pipeline_type = "V2"
 
   artifact_store {
     location = var.pipeline_s3_bucket
