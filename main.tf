@@ -120,30 +120,3 @@ resource "aws_codepipeline" "this" {
     }
   }
 }
-
-resource "aws_codestarnotifications_notification_rule" "codepipeline_notification" {
-  for_each = var.pipelines
-
-  name        = "${each.key}-notification"
-  detail_type = "FULL"
-  resource    = aws_codepipeline.this[each.key].arn
-
-  event_type_ids = [
-    "codepipeline-pipeline-pipeline-execution-failed",
-    "codepipeline-pipeline-pipeline-execution-canceled",
-    "codepipeline-pipeline-pipeline-execution-started",
-    "codepipeline-pipeline-pipeline-execution-resumed",
-    "codepipeline-pipeline-pipeline-execution-succeeded",
-    "codepipeline-pipeline-pipeline-execution-superseded",
-  ]
-
-  target {
-    address = var.chatbot_slack_target_arn
-    type    = "AWSChatbotSlack"
-  }
-
-  tags = merge(var.common_tags, {
-    Environment = var.environment
-    Name        = "${each.key}-notification"
-  })
-}

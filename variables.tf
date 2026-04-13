@@ -50,11 +50,6 @@ variable "region" {
   type        = string
 }*/
 
-variable "chatbot_slack_target_arn" {
-  description = "AWS Chatbot Slack Target ARN"
-  type        = string
-  #default     = "arn:aws:chatbot::524664341443:chat-configuration/slack-channel/devops-signalflow"
-}
 #추가변수
 variable "environment" {
   description = "Environment name (dev, prd, etc.)"
