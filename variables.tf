@@ -11,6 +11,8 @@ variable "pipelines" {
     deploy_environment_variables = optional(map(string), {})
     build_project_name           = string
     deploy_type                  = optional(string)
+    trigger_file_paths_includes  = optional(list(string), [])
+    trigger_file_paths_excludes  = optional(list(string), [])
   }))
 }
 

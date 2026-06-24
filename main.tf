@@ -46,6 +46,14 @@ resource "aws_codepipeline" "this" {
           branches {
             includes = [each.value.branch_name]
           }
+
+          dynamic "file_paths" {
+            for_each = (length(each.value.trigger_file_paths_includes) > 0 || length(each.value.trigger_file_paths_excludes) > 0) ? [1] : []
+            content {
+              includes = length(each.value.trigger_file_paths_includes) > 0 ? each.value.trigger_file_paths_includes : null
+              excludes = length(each.value.trigger_file_paths_excludes) > 0 ? each.value.trigger_file_paths_excludes : null
+            }
+          }
         }
       }
     }
