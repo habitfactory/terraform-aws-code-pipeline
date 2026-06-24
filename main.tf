@@ -1,8 +1,8 @@
 resource "aws_codepipeline" "this" {
   for_each = var.pipelines
 
-  name     = each.key
-  role_arn = var.pipeline_role_arn
+  name          = each.key
+  role_arn      = var.pipeline_role_arn
   pipeline_type = "V2"
 
   artifact_store {
@@ -22,22 +22,31 @@ resource "aws_codepipeline" "this" {
       output_artifacts = ["SourceArtifact"]
       namespace        = "SourceVariables"
 
-      # CodeCommit일 때만 namespace, OutputArtifactFormat 설정 추가
-      #namespace = each.value.provider == "CodeCommit" ? "SourceVariables" : null
-
       configuration = {
-        # 공통 속성 (CodeCommit / CodeStarSourceConnection 둘 다 포함)
         BranchName           = each.value.branch_name
         OutputArtifactFormat = "CODE_ZIP"
 
-        # CodeCommit 전용 속성
         RepositoryName       = each.value.provider == "CodeCommit" ? each.value.repository_name : null
         PollForSourceChanges = each.value.provider == "CodeCommit" ? "false" : null
 
-        # CodeStarSourceConnection 전용 속성
-        # ConnectionArn    = each.value.provider == "CodeStarSourceConnection" ? each.value.provider : null
         ConnectionArn    = each.value.provider == "CodeStarSourceConnection" ? each.value.connection_arn : null
         FullRepositoryId = each.value.provider == "CodeStarSourceConnection" ? each.value.FullRepositoryId : null
+      }
+    }
+  }
+
+  # V2 파이프라인 자동 트리거 — CodeStarSourceConnection branch push
+  dynamic "trigger" {
+    for_each = each.value.provider == "CodeStarSourceConnection" ? [1] : []
+    content {
+      provider_type = "CodeStarSourceConnection"
+      git_configuration {
+        source_action_name = "Source"
+        push {
+          branches {
+            includes = [each.value.branch_name]
+          }
+        }
       }
     }
   }
@@ -119,4 +128,31 @@ resource "aws_codepipeline" "this" {
       }
     }
   }
+}
+
+resource "aws_codestarnotifications_notification_rule" "codepipeline_notification" {
+  for_each = var.pipelines
+
+  name        = "${each.key}-notification"
+  detail_type = "FULL"
+  resource    = aws_codepipeline.this[each.key].arn
+
+  event_type_ids = [
+    "codepipeline-pipeline-pipeline-execution-failed",
+    "codepipeline-pipeline-pipeline-execution-canceled",
+    "codepipeline-pipeline-pipeline-execution-started",
+    "codepipeline-pipeline-pipeline-execution-resumed",
+    "codepipeline-pipeline-pipeline-execution-succeeded",
+    "codepipeline-pipeline-pipeline-execution-superseded",
+  ]
+
+  target {
+    address = var.chatbot_slack_target_arn
+    type    = "AWSChatbotSlack"
+  }
+
+  tags = merge(var.common_tags, {
+    Environment = var.environment
+    Name        = "${each.key}-notification"
+  })
 }

@@ -1,16 +1,16 @@
 variable "pipelines" {
   type = map(object({
-    provider               = string
-    ecs_service_name       = string
-    deploy_input_artifacts = optional(string)
-    repository_name        = optional(string) # CodeStarSourceConnection의 경우 필요 없음
-    connection_arn         = optional(string) # CodeStarSourceConnection만 필요
-    FullRepositoryId       = optional(string) # CodeStarSourceConnection만 필요
-    branch_name            = string
-    build_environment_variables  = optional(map(string))
-    deploy_environment_variables  = optional(map(string))
-    build_project_name     = string
-    deploy_type            = optional(string)
+    provider                     = string
+    ecs_service_name             = optional(string)
+    deploy_input_artifacts       = optional(string)
+    repository_name              = optional(string) # CodeStarSourceConnection의 경우 필요 없음
+    connection_arn               = optional(string) # CodeStarSourceConnection만 필요
+    FullRepositoryId             = optional(string) # CodeStarSourceConnection만 필요
+    branch_name                  = string
+    build_environment_variables  = map(string)
+    deploy_environment_variables = optional(map(string), {})
+    build_project_name           = string
+    deploy_type                  = optional(string)
   }))
 }
 
@@ -45,12 +45,11 @@ variable "region" {
   type        = string
 }
 
-/*variable "build_project_name" {
-  description = "build project name"
+variable "chatbot_slack_target_arn" {
+  description = "AWS Chatbot Slack Target ARN"
   type        = string
-}*/
+}
 
-#추가변수
 variable "environment" {
   description = "Environment name (dev, prd, etc.)"
   type        = string
